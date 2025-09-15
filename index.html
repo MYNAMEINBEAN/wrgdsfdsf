@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hyperbeam API Proxy Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #333;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+    pre {
+      background: #222;
+      color: #0f0;
+      padding: 20px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Test Hyperbeam API via Netlify Proxy</h1>
+  <button id="startBtn">Create VM Session</button>
+  <pre id="output">Click the button to start.</pre>
+
+  <script>
+    const button = document.getElementById('startBtn');
+    const output = document.getElementById('output');
+
+    button.addEventListener('click', () => {
+      output.textContent = 'Creating Hyperbeam VM Session...';
+
+      fetch('/.netlify/functions/hyperbeam-proxy', {
+        method: 'POST',
+      })
+      .then(async response => {
+        const text = await response.text();
+
+        try {
+          const data = JSON.parse(text);
+          if (!response.ok) {
+            throw new Error(data.error || 'Unknown error');
+          }
+          output.textContent = JSON.stringify(data, null, 2);
+        } catch {
+          // Response is not JSON
+          throw new Error('Response is not JSON:\n' + text);
+        }
+      })
+      .catch(error => {
+        output.textContent = 'Error: ' + error.message;
+        console.error(error);
+      });
+    });
+  </script>
+</body>
+</html>
